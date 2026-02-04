@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import API_URL from "../api";
 
 const ProfileSettings = () => {
   const [formdata, setFormdata] = useState({
@@ -15,7 +16,7 @@ const ProfileSettings = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/profile", {
+        const res = await axios.get(`${API_URL}/api/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setFormdata(res.data);
@@ -34,7 +35,7 @@ const ProfileSettings = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put("http://localhost:5000/api/profile", formdata, {
+      const res = await axios.put(`${API_URL}/api/profile`, formdata, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFormdata(res.data);

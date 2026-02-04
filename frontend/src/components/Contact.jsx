@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import Navbar from "./Navbar";
+import API_URL from "../api";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -22,7 +23,7 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      await axios.post("http://localhost:5000/api/contact", formData);
+      await axios.post(`${API_URL}/api/contact`, formData);
       setSuccess("Message sent successfully!");
       setFormData({ name: "", email: "", message: "" });
       

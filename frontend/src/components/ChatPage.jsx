@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
+import axios from "axios"; 
 import styled from "styled-components";
+import API_URL from "../api";
 
 let socket;
 
@@ -9,19 +11,26 @@ const ChatPage = () => {
   const { chatId } = useParams();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Helper to get consistent User Data from LocalStorage
+  const userData = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  // Some apps store the ID directly in userInfo, others inside a user object
+  const currentUserId = userData._id || userData.user?._id;
+  const token = userData.token || localStorage.getItem("token");
 
+  // 1. FETCH CHAT HISTORY
   useEffect(() => {
-    const fetchChatHistory = async () => {
+    const fetchHistory = async () => {
+      // Prevents fetching if chatId is undefined or literal ":chatId"
+      if (!chatId || chatId === ":chatId") return;
+
       try {
-        const token = localStorage.getItem("token"); // or wherever you store it
-        const res = await axios.get(`http://localhost:5000/api/chats/${chatId}`, {
+        const res = await axios.get(`${API_URL}/api/chats/${chatId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
         
+        // Map the backend structure to our local state structure
         const history = res.data.messages.map(m => ({
           senderId: m.sender,
           text: m.text,
@@ -30,33 +39,23 @@ const ChatPage = () => {
         
         setMessages(history);
       } catch (err) {
-        console.error("Error loading history:", err);
+        console.error("❌ Error loading history:", err);
       }
     };
 
-    if (chatId && chatId !== ":chatId") {
-      fetchChatHistory();
-    }
-  }, [chatId]);
+    fetchHistory();
+  }, [chatId, token]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const getToken = () => {
-    let token = localStorage.getItem("token");
-    if (!token) {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-      token = userInfo.token;
-    }
-    return token;
-  };
-
-  useEffect(scrollToBottom, [messages]);
-
+  // 2. SOCKET CONNECTION LOGIC
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    socket = io("http://localhost:5000");
+    if (!chatId || chatId === ":chatId") return;
+
+    // Connect to your Render Backend
+    // Note: Use the root URL (no /api) for Socket.io
+    socket = io("https://community-help-portal.onrender.com", {
+      transports: ["websocket", "polling"],
+      withCredentials: true
+    });
 
     socket.emit("joinChat", chatId);
 
@@ -64,39 +63,29 @@ const ChatPage = () => {
       setMessages((prev) => [...prev, msg]);
     });
 
+    // Cleanup on unmount
     return () => {
-      socket.disconnect();
+      if (socket) socket.disconnect();
     };
   }, [chatId]);
 
-  useEffect(() => {
-  const fetchHistory = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/chats/${chatId}`, {
-        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
-      });
-      const data = await response.json();
-      
-      
-      const formattedMessages = data.messages.map(m => ({
-        senderId: m.sender,
-        text: m.text,
-        createdAt: m.createdAt
-      }));
-      setMessages(formattedMessages);
-    } catch (err) {
-      console.error("Error fetching history:", err);
-    }
+  // 3. AUTO-SCROLL TO BOTTOM
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  useEffect(scrollToBottom, [messages]);
 
-  if (chatId) fetchHistory();
-}, [chatId]);
-
+  // 4. MESSAGE HANDLERS
   const handleSend = () => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!text.trim()) return;
+    if (!text.trim() || !socket) return;
 
-    socket.emit("sendMessage", { chatId, senderId: user._id, text });
+    const messageData = { 
+        chatId, 
+        senderId: currentUserId, 
+        text 
+    };
+
+    socket.emit("sendMessage", messageData);
     setText("");
   };
 
@@ -107,11 +96,8 @@ const ChatPage = () => {
     }
   };
 
-  const currentUserId = JSON.parse(localStorage.getItem("user") || "{}")._id;
-
   return (
     <ChatContainer>
-      
       <ChatHeader>
         <div className="header-content">
           <div className="avatar-group">
@@ -125,12 +111,8 @@ const ChatPage = () => {
             </span>
           </div>
         </div>
-        <div className="header-actions">
-          
-        </div>
       </ChatHeader>
 
-      
       <MessagesArea>
         <div className="messages-wrapper">
           {messages.length === 0 ? (
@@ -168,12 +150,8 @@ const ChatPage = () => {
         </div>
       </MessagesArea>
 
-      
       <InputArea>
         <div className="input-wrapper">
-          {/* <button className="emoji-btn" title="Add emoji">
-            😊
-          </button> */}
           <input
             type="text"
             value={text}
@@ -196,7 +174,6 @@ const ChatPage = () => {
   );
 };
 
-export default ChatPage;
 
 
 const ChatContainer = styled.div`
@@ -569,3 +546,4 @@ const InputArea = styled.div`
     }
   }
 `;
+export default ChatPage;

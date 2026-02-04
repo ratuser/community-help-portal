@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
+import API_URL from "../api";
 
 const EditRequest = () => {
   const { id } = useParams();
@@ -17,7 +18,7 @@ const EditRequest = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `http://localhost:5000/api/requests/${id}`,
+          `${API_URL}/api/requests/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -45,7 +46,7 @@ const EditRequest = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:5000/api/requests/${id}`,
+        `${API_URL}/api/requests/${id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -16,6 +16,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import API_URL from "../api";
 
 ChartJS.register(
   CategoryScale,
@@ -43,7 +44,7 @@ export default function Dashboard() {
     const fetchDashboard = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/dashboard", {
+        const res = await axios.get(`${API_URL}/api/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setData(res.data);
@@ -59,7 +60,7 @@ export default function Dashboard() {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/profile", {
+        const res = await axios.get(`${API_URL}/api/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);

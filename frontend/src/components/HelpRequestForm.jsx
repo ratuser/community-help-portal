@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import API_URL from "../api";
 const HelpRequestForm = () => {
   const navigate = useNavigate();
 
@@ -28,7 +28,7 @@ const HelpRequestForm = () => {
       const token = localStorage.getItem("token"); // if your backend requires auth
 
       await axios.post(
-        "http://localhost:5000/api/requests",
+        `${API_URL}/api/requests`,
         formdata,
         {
           headers: {

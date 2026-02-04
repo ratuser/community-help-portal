@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import API_URL from "../api";
 
 const AllRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -29,7 +30,7 @@ const AllRequests = () => {
         const token = getToken();
         if (!token) return;
 
-        const res = await axios.get("http://localhost:5000/api/requests", {
+        const res = await axios.get(`${API_URL}/api/requests`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setRequests(res.data);
@@ -49,7 +50,7 @@ const AllRequests = () => {
       if (!requesterId) return;
 
       const res = await axios.post(
-        "http://localhost:5000/api/chats/offer-help",
+        `${API_URL}/api/chats/offer-help`,
         { requestId: request._id, userId: requesterId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -69,7 +70,7 @@ const AllRequests = () => {
       const newStatus = request.status === "Open" ? "Resolved" : "Open";
 
       await axios.put(
-        `http://localhost:5000/api/requests/${request._id}/status`,
+        `${API_URL}/api/requests/${request._id}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );

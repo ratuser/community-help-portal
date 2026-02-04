@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
 import Card from "./Card";
+import API_URL from "../api";
 
 const MyRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -12,7 +13,7 @@ const MyRequests = () => {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/requests/my-requests", {
+      const res = await axios.get(`${API_URL}/api/requests/my-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRequests(res.data);
@@ -33,7 +34,7 @@ const MyRequests = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        `http://localhost:5000/api/requests/${id}`,
+        `${API_URL}/api/requests/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

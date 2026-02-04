@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import API_URL from "../api";
 export default function AdminDashboard() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ export default function AdminDashboard() {
         }
 
         const res = await fetch(
-          "http://localhost:5000/api/requests/admin/requests",
+          `${API_URL}/api/requests/admin/requests`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
