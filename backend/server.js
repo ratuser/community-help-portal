@@ -11,7 +11,7 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   "http://localhost:5173",          // Vite Local
-  process.env.FRONTEND_URL          // Your Vercel/Frontend URL
+  "https://community-help-portal.vercel.app"         // Your Vercel/Frontend URL
 ];
 
 app.use(express.json());
