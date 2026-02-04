@@ -4,11 +4,16 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const http = require("http");
+import { io } from "socket.io-client";
 require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
 
+const socket = io(import.meta.env.VITE_API_URL, {
+  withCredentials: true,
+  transports: ["websocket", "polling"] 
+});
 
 const allowedOrigins = [
   "http://localhost:5173",          // Vite Local
