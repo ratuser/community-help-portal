@@ -4,28 +4,20 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const http = require("http");
-import { io } from "socket.io-client";
 require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
 
-const socket = io(import.meta.env.VITE_API_URL, {
-  withCredentials: true,
-  transports: ["websocket", "polling"] 
-});
-
 const allowedOrigins = [
   "http://localhost:5173",          // Vite Local
-  process.env.FRONTEND_URL          // Your future Vercel URL
+  process.env.FRONTEND_URL          // Your Vercel/Frontend URL
 ];
 
 app.use(express.json());
 
-
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       return callback(new Error("CORS policy violation"), false);
@@ -35,7 +27,7 @@ app.use(cors({
   credentials: true
 }));
 
-
+// INITIALIZE SERVER-SIDE SOCKET.IO
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -44,7 +36,6 @@ const io = new Server(server, {
   },
 });
 
-
 const contactRoutes = require("./routes/contactRoutes");
 const helpRequestRoutes = require("./routes/helpRequestRoutes");
 const authRoutes = require("./routes/auth");
@@ -52,7 +43,7 @@ const chatRoutes = require("./routes/chatRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const profileRoutes = require("./routes/profile");
 
-
+// SOCKET LOGIC
 io.on("connection", (socket) => {
   console.log("New client connected: " + socket.id);
 
@@ -91,13 +82,13 @@ io.on("connection", (socket) => {
   });
 });
 
-
+// PASS IO TO ROUTES
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-
+// ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/requests", helpRequestRoutes);
 app.use("/api/chats", chatRoutes);
@@ -106,12 +97,11 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/contact", contactRoutes);
 
-
+// DATABASE CONNECTION
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected Successfully"))
   .catch((err) => console.log("❌ MongoDB Connection Error: ", err));
-
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
